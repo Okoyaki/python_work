@@ -1,0 +1,3 @@
+In python you can use for and while cycles
+In python you can import different modules
+In python you can make classes
