@@ -1,5 +1,6 @@
 import sys
 import pygame
+from random import randint
 
 from settings import Settings
 from star import Star
@@ -47,12 +48,12 @@ class StarSet:
         # Интервал между соседними пришельцами равен ширине пришельца.
         star = Star(self)
         star_width, star_height = star.rect.size
-        available_space_x = self.settings.screen_width - (2 * star_width)
+        available_space_x = self.settings.screen_width - (star_width)
         number_stars_x = available_space_x // (2 * star_width)
 
         """Определяет количество рядов, помещающихся на экране."""
         available_space_y = (self.settings.screen_height -
-                             (2 * star_height))
+                             (star_height))
         number_rows = available_space_y // (2 * star_height)
 
         # Создание флота вторжения.
@@ -64,7 +65,7 @@ class StarSet:
         """Создание приешльца и размещение его в ряду."""
         star = Star(self)
         star_width, star_height = star.rect.size
-        star.x = star_width + 2 * star_width * alien_number
+        star.x = star_width + (star_width * 2 + randint(-10, 10)) * alien_number
         star.rect.x = star.x
         star.rect.y = star_height + 2 * star_height * row_number
         self.stars.add(star)
