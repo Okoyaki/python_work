@@ -17,3 +17,9 @@ class Settings():
         self.bullet_height = 3
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
+
+        # Настройки пришельцев
+        self.alien_speed = 0.5
+        self.fleet_approach_speed = 3
+        # fleet_direction = 1 обозначает движение вверх; а -1 - вниз.
+        self.fleet_direction = 1

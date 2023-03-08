@@ -3,6 +3,7 @@ import pygame
 
 from settings import Settings
 from ship import Ship
+from alien import Alien
 from bullet import Bullet
 
 
@@ -21,6 +22,9 @@ class AlienInvasion:
 
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
 
     def run_game(self):
         """Запуск основного цикла игры."""
@@ -28,6 +32,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
             self._update_screen()
 
     def _check_events(self):
@@ -58,11 +63,58 @@ class AlienInvasion:
         elif event.key == pygame.K_DOWN:
             self.ship.moving_down = False
 
+    def _create_fleet(self):
+        """Создание флота вторжения."""
+        # Создание пришельца и вычисление количества пришельцев в ряду
+        # Интервал между соседними пришельцами равен ширине пришельца.
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        available_space_y = self.settings.screen_height - (2 * alien_height)
+        number_aliens_y = available_space_y // (2 * alien_height)
+
+        """Определяет количество рядов, помещающихся на экране."""
+        ship_width = self.ship.rect.width
+        available_space_x = (self.settings.screen_width -
+                             (2 * alien_width) - ship_width)
+        number_columns = available_space_x // (2 * alien_width)
+
+        # Создание флота вторжения.
+        for column_number in range(number_columns, 0, -1):
+            for alien_number in range(number_aliens_y):
+                self._create_alien(alien_number, column_number)
+
+    def _create_alien(self, alien_number, column_number):
+        """Создание приешльца и размещение его в столбце."""
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+        alien.y = alien_height + 2 * alien_height * alien_number
+        alien.rect.y = alien.y
+        alien.rect.x = alien_width + 2 * alien_width * column_number
+        self.aliens.add(alien)
+
+    def _check_fleet_edges(self):
+        """Реагирует на достижение пришельцем края экрана."""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """Опускает весь флот и меняет направление флота."""
+        for alien in self.aliens.sprites():
+            alien.rect.x -= self.settings.fleet_approach_speed
+        self.settings.fleet_direction *= -1
+
     def _fire_bullet(self):
         """Создание нового снаряда и включение его в группу bullets."""
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+
+    def _update_aliens(self):
+        """Обновляет позиции всех пришельцев во флоте."""
+        self._check_fleet_edges()
+        self.aliens.update()
 
     def _update_bullets(self):
         """Обновление позиции снарядов и уничтожение старых снарядов."""
@@ -74,12 +126,27 @@ class AlienInvasion:
             if bullet.rect.left >= self.ship.screen_rect.right:
                 self.bullets.remove(bullet)
 
+        self._check_bullet_collisions()
+
+    def _check_bullet_collisions(self):
+        """Обработка коллизий снарядов с пришельцами."""
+        # Удаление снарядов и пришельцев, участвующих в коллизиях.
+        collisions = pygame.sprite.groupcollide(
+            self.bullets, self.aliens, True, True
+        )
+
+        if not self.aliens:
+            # Уничтожение существующих снарядов и создание нового флота
+            self.bullets.empty()
+            self._create_fleet()
+
     def _update_screen(self):
         """Обновляет изображения на экране и отображает новый экран."""
         self.screen.fill(self.settings.bg_color)
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.aliens.draw(self.screen)
 
         pygame.display.flip()
 
