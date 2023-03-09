@@ -10,6 +10,7 @@ class Settings():
 
         # Настройки корабля
         self.ship_speed = 1.5
+        self.ship_limit = 3
 
         # Параметры снаряда
         self.bullet_speed = 1
@@ -21,5 +22,6 @@ class Settings():
         # Настройки пришельцев
         self.alien_speed = 0.5
         self.fleet_approach_speed = 3
+
         # fleet_direction = 1 обозначает движение вверх; а -1 - вниз.
         self.fleet_direction = 1

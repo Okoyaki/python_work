@@ -1,7 +1,10 @@
 import sys
+from time import sleep
+
 import pygame
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from alien import Alien
 from bullet import Bullet
@@ -20,6 +23,8 @@ class AlienInvasion:
 
         pygame.display.set_caption("Alien Invasion")
 
+        self.stats = GameStats(self)
+
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -30,9 +35,12 @@ class AlienInvasion:
         """Запуск основного цикла игры."""
         while True:
             self._check_events()
-            self.ship.update()
-            self._update_bullets()
-            self._update_aliens()
+
+            if self.stats.game_active:
+                self.ship.update()
+                self._update_bullets()
+                self._update_aliens()
+
             self._update_screen()
 
     def _check_events(self):
@@ -115,6 +123,41 @@ class AlienInvasion:
         """Обновляет позиции всех пришельцев во флоте."""
         self._check_fleet_edges()
         self.aliens.update()
+
+        # Проверка коллизий "пришелец - корабль".
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            self._ship_hit()
+
+        # Проверить, добрались ли пришельцы до нижнего края экрана.
+        self._check_aliens_left()
+
+    def _ship_hit(self):
+        """Обрабатывает столкновение корабля с пришельцем."""
+        if self.stats.ships_left > 0:
+            # Уменьшение ships_left.
+            self.stats.ships_left -= 1
+
+            # Очистка списков пришельцев и снарядов.
+            self.aliens.empty()
+            self.bullets.empty()
+
+            # Создание нового флота и размещение корабля в центре.
+            self._create_fleet()
+            self.ship.center_ship()
+
+            # Пауза.
+            sleep(0.5)
+        else:
+            self.stats.game_active = False
+
+    def _check_aliens_left(self):
+        """Проверяет, добрались ли пришельцы до нижнего края экрана."""
+        screen_rect = self.screen.get_rect()
+        for alien in self.aliens.sprites():
+            if alien.rect.left <= 0:
+                # Происходит то же самое, что при столкновении с кораблем.
+                self._ship_hit()
+                break
 
     def _update_bullets(self):
         """Обновление позиции снарядов и уничтожение старых снарядов."""
