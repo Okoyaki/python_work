@@ -147,8 +147,19 @@ class AlienInvasion:
             if collisions:
                 # Уничтожение существующих снарядов и создание нового флота
                 sleep(0.5)
-                self.stats.game_active = False
-                pygame.mouse.set_visible(True)
+                self.next_level()
+
+    def next_level(self):
+        """Сброс позиций всех объектов игры и увеличение сложности"""
+        self.bullets.empty()
+
+        # Создание нового флота и размещение корабля в центре.
+        self.target.place_reset()
+        self.ship.center_ship()
+
+        self.stats.reset_stats()
+
+        self.settings.increase_target_speed()
 
     def _update_screen(self):
         """Обновляет изображения на экране и отображает новый экран."""

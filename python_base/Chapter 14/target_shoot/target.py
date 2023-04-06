@@ -29,7 +29,7 @@ class Target(Sprite):
     def update(self):
         """Перемещает снаряд вверх по экрану."""
         # Обновление позиции мишени в вещественном формате.
-        self.y += (self.settings.target_speed *
+        self.y += (self.settings.target_speed_factor *
                         self.settings.target_direction)
         # Обновление позиции прямоугольника.
         self.rect.y = self.y

@@ -26,9 +26,9 @@ class Ship():
     def update(self):
         """Обновляет позицию корабля с учетом флагов."""
         if self.moving_up and self.rect.top > 0:
-            self.y -= self.settings.ship_speed
+            self.y -= self.settings.ship_speed_factor
         if self.moving_down and self.rect.bottom < self.screen_rect.bottom:
-            self.y += self.settings.ship_speed
+            self.y += self.settings.ship_speed_factor
 
         # Обновление атрибута rect на основании self.x.
         self.rect.y = self.y
