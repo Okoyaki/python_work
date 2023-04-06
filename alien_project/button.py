@@ -4,7 +4,7 @@ import pygame.font
 class Button():
     """Класс, обозначающий кнопку."""
 
-    def __init__(self, ai_game, msg):
+    def __init__(self, ai_game, msg, x_offset=0):
         """Инициализирует атрибуты кнопки."""
         self.screen = ai_game.screen
         self.screen_rect = ai_game.screen.get_rect()
@@ -15,14 +15,18 @@ class Button():
         self.text_color = (255, 255, 255)
         self.font = pygame.font.SysFont(None, 48)
 
-        # Построение объекта rect кнопки и выравнивание по центру экрана.
+        """
+        Построение объекта rect кнопки и выравнивание по центру экрана с возможностью
+        сдвига по горизонтали.
+        """
         self.rect = pygame.Rect(0, 0, self.width, self. height)
         self.rect.center = self.screen_rect.center
+        self.rect.centerx += x_offset * (self.width + 50)
 
         # Сообщение кнопки создается только один раз.
-        self.prep_msg(msg)
+        self.__prep_msg(msg)
 
-    def prep_msg(self, msg):
+    def __prep_msg(self, msg):
         """Преобразует msg в прямоугольник и выравнивает текст по центру."""
         self.msg_image = self.font.render(msg, True, self.text_color, self.button_color)
         self.msg_image_rect = self.msg_image.get_rect()
