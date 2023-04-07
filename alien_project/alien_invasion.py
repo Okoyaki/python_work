@@ -61,6 +61,7 @@ class AlienInvasion:
         """Обрабатывает нажатия клавиш и события мыши."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.stats.save_highscore()
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
@@ -75,10 +76,9 @@ class AlienInvasion:
 
     def start_game(self):
         """Запускает новую игру."""
-        # Сброс игровой статистики.
-        self.stats.reset_stats()
-        self.stats.game_active = True
-        self.stats.choosing_dif = False
+        # Обновление статистики и инициализация параметров.
+        self._reset_and_prep()
+        self.settings.initialize_dynamic_settings()
 
         # Очистка списков пришельцев и снарядов.
         self.aliens.empty()
@@ -109,11 +109,19 @@ class AlienInvasion:
                     self.settings.difficulty_multiplier = 1.0
                 elif button == self.button_hard:
                     self.settings.difficulty_multiplier = 1.5
-                self.sb.prep_score()
-                self.sb.prep_level()
-                self.settings.initialize_dynamic_settings()
                 self.start_game()
 
+    def _reset_and_prep(self):
+        """Подготавливает счет, уровень, количество кораблей и инициализирует игру."""
+        # Сброс статистики.
+        self.stats.reset_stats()
+        self.stats.game_active = True
+        self.stats.choosing_dif = False
+
+        # Вывод статистики на экран.
+        self.sb.prep_score()
+        self.sb.prep_level()
+        self.sb.prep_ships()
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие клавишы."""
@@ -124,6 +132,7 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
+            self.stats.save_highscore()
             sys.exit()
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
@@ -134,7 +143,6 @@ class AlienInvasion:
                 self.settings.difficulty_multiplier = 1.0
             elif event.key == pygame.K_h:
                 self.settings.difficulty_multiplier = 1.5
-            self.settings.initialize_dynamic_settings()
             self.start_game()
 
     def _check_keyup_events(self, event):
@@ -209,6 +217,7 @@ class AlienInvasion:
         if self.stats.ships_left > 0:
             # Уменьшение ships_left.
             self.stats.ships_left -= 1
+            self.sb.prep_ships()
 
             # Очистка списков пришельцев и снарядов.
             self.aliens.empty()

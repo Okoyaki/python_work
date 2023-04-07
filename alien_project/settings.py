@@ -9,7 +9,7 @@ class Settings():
         self.bg_color = (230, 230, 230)
 
         # Настройки корабля
-        self.ship_limit = 3
+        self.ship_limit = 1
 
         # Сдвиг позиций кнопок по горизонтали
         self.x_off_easy = -1
@@ -37,7 +37,7 @@ class Settings():
         """Инициализирует настройки, изменяющиеся в ходе игры."""
         self.ship_speed_factor = 1.5 * self.difficulty_multiplier
         self.bullet_speed_factor = 3.0 * self.difficulty_multiplier
-        self.alien_speed_factor = 1.0 * self.difficulty_multiplier
+        self.alien_speed_factor = 2.0 * self.difficulty_multiplier
 
         # Подсчет очков
         self.alien_points = 50
