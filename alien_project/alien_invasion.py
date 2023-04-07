@@ -1,5 +1,7 @@
 import sys
 from time import sleep
+import sched, time
+from random import randint
 
 import pygame
 
@@ -33,6 +35,9 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
+        self.enemy_bullets = pygame.sprite.Group()
+
+        self.initialize_fire_event()
 
         self._create_fleet()
 
@@ -53,6 +58,7 @@ class AlienInvasion:
             if self.stats.game_active:
                 self.ship.update()
                 self._update_bullets()
+                self._update_enemy_bullets()
                 self._update_aliens()
 
             self._update_screen()
@@ -63,6 +69,8 @@ class AlienInvasion:
             if event.type == pygame.QUIT:
                 self.stats.save_highscore()
                 sys.exit()
+            elif event.type == self.FIREEVENT:
+                self._fire_enemy_bullet()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
@@ -83,6 +91,7 @@ class AlienInvasion:
         # Очистка списков пришельцев и снарядов.
         self.aliens.empty()
         self.bullets.empty()
+        self.enemy_bullets.empty()
 
         # Создание нового флота и размещение корабля в центре.
         self._create_fleet()
@@ -111,17 +120,21 @@ class AlienInvasion:
                     self.settings.difficulty_multiplier = 1.5
                 self.start_game()
 
+    def initialize_fire_event(self):
+        """Инициализирует событие выстрела врагом снаряда."""
+        self.FIREEVENT = pygame.USEREVENT + 0
+        self.fire_int = 1000
+        pygame.time.set_timer(self.FIREEVENT, self.fire_int)
+
     def _reset_and_prep(self):
-        """Подготавливает счет, уровень, количество кораблей и инициализирует игру."""
+        """Сбрасывает статистику и выводит её на экран."""
         # Сброс статистики.
         self.stats.reset_stats()
         self.stats.game_active = True
         self.stats.choosing_dif = False
 
         # Вывод статистики на экран.
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.sb.prep_images()
 
     def _check_keydown_events(self, event):
         """Реагирует на нажатие клавишы."""
@@ -200,6 +213,14 @@ class AlienInvasion:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
 
+    def _fire_enemy_bullet(self):
+        """Создание нового вражеского снаряда и включение его в группу alien_bullets."""
+        if len(self.enemy_bullets) < self.settings.enemy_bullets_allowed:
+            new_enemy_bullet = Bullet(self)
+            rand_alien = randint(0, len(self.aliens.sprites()) - 1)
+            new_enemy_bullet.set_enemy_bullet(self.aliens.sprites()[rand_alien].rect)
+            self.enemy_bullets.add(new_enemy_bullet)
+
     def _update_aliens(self):
         """Обновляет позиции всех пришельцев во флоте."""
         self._check_fleet_edges()
@@ -222,6 +243,7 @@ class AlienInvasion:
             # Очистка списков пришельцев и снарядов.
             self.aliens.empty()
             self.bullets.empty()
+            self.enemy_bullets.empty()
 
             # Создание нового флота и размещение корабля в центре.
             self._create_fleet()
@@ -255,6 +277,19 @@ class AlienInvasion:
 
         self._check_bullet_alien_collisions()
 
+    def _update_enemy_bullets(self):
+        """Обновление позиции снарядов и уничтожение старых снарядов."""
+        # Обновление позиций снарядов.
+        self.enemy_bullets.update()
+
+        # Удаление снарядов, вышедших за край экрана.
+        for enemy_bullet in self.enemy_bullets.copy():
+            if enemy_bullet.rect.top > self.settings.screen_height:
+                self.enemy_bullets.remove(enemy_bullet)
+
+        if pygame.sprite.spritecollideany(self.ship, self.enemy_bullets):
+            self._ship_hit()
+
     def _check_bullet_alien_collisions(self):
         """Обработка коллизий снарядов с пришельцами."""
         # Удаление снарядов и пришельцев, участвующих в коллизиях.
@@ -269,14 +304,19 @@ class AlienInvasion:
             self.sb.check_high_score()
 
         if not self.aliens:
-            # Уничтожение существующих снарядов и создание нового флота
-            self.bullets.empty()
-            self._create_fleet()
-            self.settings.increase_speed()
+            self.start_new_level()
 
-            # Увеличение уровня.
-            self.stats.level += 1
-            self.sb.prep_level()
+    def start_new_level(self):
+        """Запуск нового уровня."""
+        # Уничтожение существующих снарядов и создание нового флота
+        self.bullets.empty()
+        self.enemy_bullets.empty()
+        self._create_fleet()
+        self.settings.increase_speed()
+
+        # Увеличение уровня.
+        self.stats.level += 1
+        self.sb.prep_level()
 
     def _update_screen(self):
         """Обновляет изображения на экране и отображает новый экран."""
@@ -284,6 +324,8 @@ class AlienInvasion:
         self.ship.blitme()
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        for enemy_bullet in self.enemy_bullets.sprites():
+            enemy_bullet.draw_bullet()
         self.aliens.draw(self.screen)
 
         # Вывод информации о счете.

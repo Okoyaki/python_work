@@ -20,6 +20,7 @@ class Settings():
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
+        self.enemy_bullets_allowed = 1
 
         # Настройки пришельцев
         self.fleet_drop_speed = 3
@@ -37,7 +38,8 @@ class Settings():
         """Инициализирует настройки, изменяющиеся в ходе игры."""
         self.ship_speed_factor = 1.5 * self.difficulty_multiplier
         self.bullet_speed_factor = 3.0 * self.difficulty_multiplier
-        self.alien_speed_factor = 2.0 * self.difficulty_multiplier
+        self.alien_speed_factor = 1.0 * self.difficulty_multiplier
+        self.enemy_bullet_speed_factor = 1.5 * self.difficulty_multiplier
 
         # Подсчет очков
         self.alien_points = 50
