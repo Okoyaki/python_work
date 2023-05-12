@@ -48,6 +48,16 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 # Создание модели
 num_classes = len(class_names)
 
+"""Попытка сделать через MLP
+model = Sequential([
+    tf.keras.layers.Rescaling(1./255),
+    tf.keras.layers.Flatten(),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(256, activation='relu'),
+    tf.keras.layers.Dense(128, activation='relu'),
+    tf.keras.layers.Dense(num_classes)
+    ])"""
+
 model = Sequential([
     tf.keras.layers.Rescaling(1./255),
     tf.keras.layers.Conv2D(32, 3, activation='relu'),
